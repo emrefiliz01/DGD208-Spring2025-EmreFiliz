@@ -2,8 +2,7 @@
 
 namespace DGD208_Spring2025_EmreFiliz
 {
-    class Program
+    public class Pet
     {
-
     }
 }
