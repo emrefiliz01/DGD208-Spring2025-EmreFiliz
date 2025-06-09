@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace DGD208_Spring2025_EmreFiliz
 {
@@ -10,13 +11,9 @@ namespace DGD208_Spring2025_EmreFiliz
         }
 
         static Pet selectedPet = null;
+        static PetManager petManager = new PetManager();
 
-        static void Main(string[] args)
-        {
-            ShowMenu();
-        }
-
-        static void ShowMenu()
+        public static async Task ShowMenu()
         {
             bool isRunning = true;
 
@@ -38,10 +35,10 @@ namespace DGD208_Spring2025_EmreFiliz
                         AdoptPet();
                         break;
                     case "2":
-                        ShowStats();
+                        await ShowStats();                    
                         break;
                     case "3":
-                        UseItem();
+                        await UseItem();
                         break;
                     case "4":
                         ShowCredits();
@@ -68,43 +65,139 @@ namespace DGD208_Spring2025_EmreFiliz
                 Console.WriteLine($"{i + 1}. {petOptions[i]}");
             }
 
-            Console.WriteLine("Enter your choice: ");
+            Console.Write("Enter your choice: ");
             string choiceInput = Console.ReadLine();
             int choice;
 
             if (int.TryParse(choiceInput, out choice) && choice >= 1 && choice <= petOptions.Count)
             {
-                selectedPet = new Pet(petOptions[choice - 1]);
-                Console.WriteLine($"You adopted a {selectedPet.Name}");
+                string petTypeName = petOptions[choice - 1];
+
+                if (Enum.TryParse<PetType>(petTypeName, out PetType petType))
+                {
+                    Console.Write("Give your pet a name: ");
+                    string petName = Console.ReadLine();
+
+                    Pet newPet = new Pet(petName, petType);
+                    petManager.AdoptPet(newPet);
+
+                    selectedPet= newPet;
+
+                    Console.WriteLine($"You adopted a {petType} named {petName}");
+                }
+                else
+                {
+                    Console.WriteLine("Invalid pet type.");
+                }
             }
             else
             {
-                Console.WriteLine("Invalid Choice");
+                Console.WriteLine("Invalid choice.");
             }
 
             Console.WriteLine("Press Enter to return to the Main Menu");
             Console.ReadLine();
         }
 
-        static void ShowStats()
+        static async Task ShowStats()
+        {
+            if (petManager.Pets.Count == 0)
+            {
+                Console.WriteLine("You haven't adopted any pets yet.");
+                Console.WriteLine("Press Enter to return to the Main Menu.");
+                Console.ReadLine();
+                return;
+            }
+
+            Console.WriteLine("Select a pet to view stats:");
+            for (int i = 0; i < petManager.Pets.Count; i++)
+            {
+                Console.WriteLine($"{i + 1}. {petManager.Pets[i].Name} ({petManager.Pets[i].Type})");
+            }
+
+            Console.Write("Enter your choice: ");
+            string input = Console.ReadLine();
+            int choice;
+
+            if (!int.TryParse(input, out choice) || choice < 1 || choice > petManager.Pets.Count)
+            {
+                Console.WriteLine("Invalid selection.");
+            }
+            else
+            {
+                Pet selected = petManager.Pets[choice - 1];
+                selectedPet = selected;
+                selected.ShowStats();
+            }
+
+            Console.WriteLine("Press Enter to return to the Main Menu.");
+            Console.ReadLine();
+        }
+
+        static async Task UseItem()
         {
             if (selectedPet == null)
             {
-                Console.WriteLine("You haven't adopted a pet yet");
+                Console.WriteLine("You haven't adopted a pet yet.");
+                Console.WriteLine("Press Enter to return the Main Menu.");
+                Console.ReadLine();
+                return;
+
             }
-            else
+
+            Console.WriteLine("Select a pet to use an item on:");
+            for (int i = 0; i < petManager.Pets.Count; i++)
             {
-                selectedPet.ShowStats();
+                Console.WriteLine($"{i + 1}. {petManager.Pets[i].Name} ({petManager.Pets[i].Type})");
             }
 
-            Console.WriteLine("Press Enter to return to the Main Menu");
-            Console.ReadLine();
-        }
+            Console.Write("Enter your choice: ");
+            string petInput = Console.ReadLine();
+            int petChoice;
 
-        static void UseItem()
-        {
-            Console.WriteLine("Don't have Items yet");
-            Console.WriteLine("Press Enter to return to the Main Menu");
+            if (!int.TryParse(petInput, out petChoice) || petChoice < 1 || petChoice > petManager.Pets.Count)
+            {
+                Console.WriteLine("Invalid pet selection.");
+                Console.WriteLine("Press Enter to return to the Main Menu.");
+                Console.ReadLine();
+                return;
+            }
+
+            Pet selected = petManager.Pets[petChoice - 1];
+            selectedPet = selected;
+
+            if (!selected.IsAlive)
+            {
+                Console.WriteLine($"{selected.Name} is no longer alive :( ");
+                Console.WriteLine("Press Enter to return to the Main Menu.");
+                Console.ReadLine();
+                return;
+            }
+
+            Console.WriteLine($"Select an item to use on {selected.Name}:");
+            for (int i = 0; i < petManager.Items.Count; i++)
+            {
+                var item = petManager.Items[i];
+                Console.WriteLine($"{i + 1}. {item.Name} (+{item.StatIncreaseAmount})");
+            }
+
+            Console.Write("Enter your choice: ");
+            string itemInput = Console.ReadLine();
+            int itemChoice;
+
+            if (!int.TryParse(itemInput, out itemChoice) || itemChoice < 1 || itemChoice > petManager.Items.Count)
+            {
+                Console.WriteLine("Invalid item selection.");
+                Console.WriteLine("Press Enter to return to the Main Menu.");
+                Console.ReadLine();
+                return;
+            }
+
+            Item selectedItem = petManager.Items[itemChoice - 1];
+
+            await petManager.UseItemOnPetAsync(selected, selectedItem);
+
+            Console.WriteLine("Press Enter to return to the Main Menu.");
             Console.ReadLine();
         }
 

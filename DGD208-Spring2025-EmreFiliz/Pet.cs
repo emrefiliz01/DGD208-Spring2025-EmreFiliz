@@ -55,7 +55,7 @@ namespace DGD208_Spring2025_EmreFiliz
                 if (Hunger == 0 || Sleep == 0 || Fun == 0)
                 {
                     IsAlive = false;
-                    Console.WriteLine($"\n{Name} the {Type}) is dead :(");
+                    Console.WriteLine($"\n{Name} (the {Type}) is dead :(");
                 }
             }
         }
