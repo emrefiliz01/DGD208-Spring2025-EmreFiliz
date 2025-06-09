@@ -27,6 +27,21 @@ namespace DGD208_Spring2025_EmreFiliz
             Console.WriteLine($"Fun: {Fun}");
         }
 
+        public void IncreaseHunger(int amount)
+        {
+            Hunger = Math.Min(Hunger + amount, 100);
+        }
+
+        public void IncreaseSleep(int amount)
+        {
+            Sleep = Math.Min(Sleep + amount, 100);
+        }
+
+        public void IncreaseFun(int amount)
+        {
+            Fun = Math.Min(Fun + amount, 100);
+        }
+
         public async Task StatDecreaseAsync()
         {
             while (IsAlive)
